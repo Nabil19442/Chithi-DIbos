@@ -1,0 +1,6 @@
+{
+  "name": "Chithi Dibosh - Anonymous Letters",
+  "description": "An anonymous letter and message platform for Chithi Dibosh (Letter Day) where anyone can write heartfelt notes with zero personal tracking, complete with an administrative inbox and analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

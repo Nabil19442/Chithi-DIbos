@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Hind Siliguri', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  
+  h1, h2, h3, .font-title {
+    font-family: 'Tiro Bangla', 'Playfair Display', Georgia, serif;
+  }
+
+  .font-handwritten {
+    font-family: 'Caveat', 'Hind Siliguri', cursive;
+  }
+}
+
+.letter-paper {
+  background-color: #FEFCF9;
+  background-image: radial-gradient(#E5DACE 0.65px, transparent 0.65px);
+  background-size: 18px 18px;
+}
+
+.letter-lines {
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 31px,
+    #F0E5D8 31px,
+    #F0E5D8 32px
+  );
+  line-height: 32px;
+}
+
+/* Custom scrollbar for letter view and inbox */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #E2D3C7;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #CBB9AB;
+}
