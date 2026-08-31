@@ -3,18 +3,47 @@ import { Letter, AdminStats, SubmitLetterPayload, FilterStatus, SortOrder } from
 const ADMIN_TOKEN_KEY = "chithi_admin_token";
 
 export function getStoredAdminToken(): string | null {
-  return localStorage.getItem(ADMIN_TOKEN_KEY);
+  try {
+    return localStorage.getItem(ADMIN_TOKEN_KEY);
+  } catch {
+    return null;
+  }
 }
 
 export function setStoredAdminToken(token: string): void {
-  localStorage.setItem(ADMIN_TOKEN_KEY, token);
+  try {
+    localStorage.setItem(ADMIN_TOKEN_KEY, token);
+  } catch (err) {
+    console.error("Could not store admin token:", err);
+  }
 }
 
 export function clearStoredAdminToken(): void {
-  localStorage.removeItem(ADMIN_TOKEN_KEY);
+  try {
+    localStorage.removeItem(ADMIN_TOKEN_KEY);
+  } catch (err) {
+    console.error("Could not clear admin token:", err);
+  }
 }
 
-export async function submitLetter(payload: SubmitLetterPayload): Promise<{ success: boolean; letterId?: string; error?: string }> {
+/**
+ * Safely parse JSON from response or fallback to text error
+ */
+async function safeJson(res: Response): Promise<any> {
+  const contentType = res.headers.get("content-type");
+  if (contentType && contentType.includes("application/json")) {
+    try {
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+export async function submitLetter(
+  payload: SubmitLetterPayload
+): Promise<{ success: boolean; letterId?: string; error?: string }> {
   try {
     const res = await fetch("/api/letters", {
       method: "POST",
@@ -22,17 +51,27 @@ export async function submitLetter(payload: SubmitLetterPayload): Promise<{ succ
       body: JSON.stringify(payload),
     });
 
-    const data = await res.json();
+    const data = await safeJson(res);
     if (!res.ok) {
-      return { success: false, error: data.error || "চিঠি পাঠাতে সমস্যা হয়েছে।" };
+      return {
+        success: false,
+        error: data?.error || `চিঠি পাঠাতে ব্যর্থ হয়েছে (${res.status})`,
+      };
     }
-    return { success: true, letterId: data.letterId };
+    return { success: true, letterId: data?.letterId };
   } catch (err: any) {
-    return { success: false, error: "নেটওয়ার্ক সমস্যা। অনুগ্রহ করে পুনরায় চেষ্টা করুন।" };
+    console.error("Submit letter error:", err);
+    return {
+      success: false,
+      error: "নেটওয়ার্ক সমস্যা। সার্ভারের সাথে সংযোগ স্থাপন করা যায়নি।",
+    };
   }
 }
 
-export async function loginAdmin(username: string, password: string): Promise<{ success: boolean; token?: string; error?: string }> {
+export async function loginAdmin(
+  username: string,
+  password: string
+): Promise<{ success: boolean; token?: string; error?: string }> {
   try {
     const res = await fetch("/api/admin/login", {
       method: "POST",
@@ -40,16 +79,36 @@ export async function loginAdmin(username: string, password: string): Promise<{ 
       body: JSON.stringify({ username, password }),
     });
 
-    const data = await res.json();
+    const data = await safeJson(res);
+
     if (!res.ok) {
-      return { success: false, error: data.error || "লগইন ব্যর্থ হয়েছে।" };
+      if (res.status === 401) {
+        return { success: false, error: data?.error || "ভুল ইউজারনেম অথবা পাসওয়ার্ড।" };
+      }
+      if (res.status === 404) {
+        return {
+          success: false,
+          error: "লগইন এপিআই পাওয়া যায়নি (404)। দয়া করে Vercel সার্ভারলেস রুট চেক করুন।",
+        };
+      }
+      return {
+        success: false,
+        error: data?.error || `লগইন ব্যর্থ হয়েছে (${res.status})।`,
+      };
     }
-    if (data.token) {
+
+    if (data?.token) {
       setStoredAdminToken(data.token);
+      return { success: true, token: data.token };
     }
-    return { success: true, token: data.token };
+
+    return { success: false, error: "সার্ভার থেকে টোকেন পাওয়া যায়নি।" };
   } catch (err: any) {
-    return { success: false, error: "সার্ভারে সংযোগ করা যায়নি।" };
+    console.error("Login fetch error:", err);
+    return {
+      success: false,
+      error: "সার্ভারে সংযোগ করা যায়নি। ইন্টারনেট ও সার্ভার স্ট্যাটাস চেক করুন।",
+    };
   }
 }
 
@@ -65,7 +124,8 @@ export async function verifyAdminAuth(): Promise<boolean> {
       clearStoredAdminToken();
       return false;
     }
-    return true;
+    const data = await safeJson(res);
+    return Boolean(data?.valid);
   } catch {
     return false;
   }
@@ -80,7 +140,7 @@ export async function getAdminStats(): Promise<AdminStats | null> {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) return null;
-    return await res.json();
+    return await safeJson(res);
   } catch {
     return null;
   }
@@ -106,7 +166,7 @@ export async function getAdminLetters(params: {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) return null;
-    return await res.json();
+    return await safeJson(res);
   } catch {
     return null;
   }
@@ -121,7 +181,7 @@ export async function getLetterDetails(id: string): Promise<Letter | null> {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) return null;
-    return await res.json();
+    return await safeJson(res);
   } catch {
     return null;
   }

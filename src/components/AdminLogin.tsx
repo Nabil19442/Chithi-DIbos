@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Lock, User, Eye, EyeOff, ShieldCheck, ArrowLeft, AlertCircle, KeyRound } from "lucide-react";
+import { Lock, User, Eye, EyeOff, ArrowLeft, AlertCircle, KeyRound } from "lucide-react";
 import { loginAdmin } from "../utils/api";
 
 interface AdminLoginProps {
@@ -34,12 +34,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBackTo
     }
   };
 
-  const handleFillDemo = () => {
-    setUsername("admin");
-    setPassword("chithi2026!secret");
-    setError(null);
-  };
-
   return (
     <div className="py-12 sm:py-20 max-w-md mx-auto px-4">
       {/* Back button */}
@@ -66,9 +60,9 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBackTo
         </div>
 
         {error && (
-          <div className="mb-5 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <span>{error}</span>
+          <div className="mb-5 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <span className="leading-snug">{error}</span>
           </div>
         )}
 
@@ -87,10 +81,11 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBackTo
               <input
                 id="admin-username"
                 type="text"
+                autoComplete="username"
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="যেমন: admin"
+                placeholder="ইউজারনেম বা ইমেইল লিখুন"
                 className="w-full pl-9 pr-3.5 py-2.5 rounded-lg bg-[#FAF4ED] border border-[#DFCFC0] focus:border-[#801B2B] focus:ring-1 focus:ring-[#801B2B] text-sm text-[#2A1E1B] placeholder-[#A39286] outline-none transition"
               />
             </div>
@@ -110,6 +105,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBackTo
               <input
                 id="admin-password"
                 type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -120,6 +116,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBackTo
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#9E8D81] hover:text-[#801B2B] transition cursor-pointer"
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -130,7 +127,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBackTo
             id="admin-login-submit-btn"
             type="submit"
             disabled={isLoading}
-            className="w-full py-2.5 px-4 rounded-lg bg-[#801B2B] hover:bg-[#681421] text-white text-sm font-medium transition shadow flex items-center justify-center gap-2 cursor-pointer mt-2"
+            className="w-full py-2.5 px-4 rounded-lg bg-[#801B2B] hover:bg-[#681421] text-white text-sm font-medium transition shadow flex items-center justify-center gap-2 cursor-pointer mt-2 disabled:opacity-75"
           >
             {isLoading ? (
               <>
@@ -145,20 +142,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onBackTo
             )}
           </button>
         </form>
-
-        {/* Quick Demo Fill Aid for Owner */}
-        <div className="mt-6 pt-4 border-t border-[#EFE5DC] text-center">
-          <p className="text-[11px] text-[#8C7B70] mb-1.5">
-            ডিফল্ট অ্যাডমিন ক্রেডেনশিয়াল:
-          </p>
-          <button
-            type="button"
-            onClick={handleFillDemo}
-            className="text-xs text-[#801B2B] hover:underline font-medium cursor-pointer"
-          >
-            স্বয়ংক্রিয় পূরণ (admin / chithi2026!secret)
-          </button>
-        </div>
       </div>
     </div>
   );
